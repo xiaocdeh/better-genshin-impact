@@ -140,6 +140,12 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                 .Where(b => !blackboard.chooseBaitFailures.GroupBy(f => f).Where(g => g.Count() >= MAX_FAILED_TIMES).Any(g => g.Key == b.Key))  // 不能是已经失败两次的饵
                 .OrderByDescending(g => g.Count()).First().Key; // 选择最多鱼吃的饵料
             logger.LogInformation("选择鱼饵 {Text}", BaitType.FromName(blackboard.selectedBaitName).ChineseName);
+            
+            //axc
+            blackboard.selectedBaitName = "fake fly bait"; // 飞蝇假饵
+            // blackboard.selectedBaitName = "false worm bait"; // 蠕虫假饵 - 雷鸣仙
+            logger.LogInformation("axc选择鱼饵 {Text}", BaitType.FromName(blackboard.selectedBaitName).ChineseName);
+            //axc
 
             // 寻找鱼饵
             var ro = new RecognitionObject
@@ -183,7 +189,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                 blackboard.Sleep(700);
                 // 可能重复点击，所以固定界面点击下
                 imageRegion.ClickTo((int)(imageRegion.Width * 0.675), (int)(imageRegion.Height / 3d));
-                blackboard.Sleep(200);
+                blackboard.Sleep(700);
                 // 点击确定
                 using var ra = imageRegion.Find(new RecognitionObject
                 {
@@ -387,7 +393,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                 Debug.WriteLine("无鱼饵适用鱼");
                 noTargetFishTimes++;
 
-                if (noTargetFishTimes > 10)
+                if (noTargetFishTimes >= 3)
                 {
                     // 没有找到鱼饵适用鱼，重新选择鱼饵
                     blackboard.throwRodNoBaitFish = true;
@@ -403,6 +409,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                     blackboard.Sleep(2000);
                     input.Mouse.LeftButtonClick();
                     blackboard.Sleep(800);
+                    blackboard.abort = true;
 
                     return BehaviourStatus.Succeeded;
                 }
