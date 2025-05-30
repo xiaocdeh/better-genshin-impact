@@ -142,8 +142,12 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
             logger.LogInformation("选择鱼饵 {Text}", BaitType.FromName(blackboard.selectedBaitName).ChineseName);
             
             //axc
+            // blackboard.selectedBaitName = "fruit paste bait"; // 果酿饵
+            
             blackboard.selectedBaitName = "fake fly bait"; // 飞蝇假饵
-            // blackboard.selectedBaitName = "false worm bait"; // 蠕虫假饵 - 雷鸣仙
+            
+            // blackboard.selectedBaitName = "flashing maintenance mek bait"; // 维护机关频闪诱饵
+            // blackboard.selectedBaitName = "sour bait"; // 酸桔饵
             logger.LogInformation("axc选择鱼饵 {Text}", BaitType.FromName(blackboard.selectedBaitName).ChineseName);
             //axc
 
