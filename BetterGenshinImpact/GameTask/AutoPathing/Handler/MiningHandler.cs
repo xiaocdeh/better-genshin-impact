@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BetterGenshinImpact.GameTask.AutoFight.Model;
@@ -17,6 +19,7 @@ namespace BetterGenshinImpact.GameTask.AutoPathing.Handler;
 public class MiningHandler : IActionHandler
 {
     private readonly CombatScript _miningCombatScript = CombatScriptParser.ParseContext("""
+        卡齐娜 e(hold),attack(0.2),attack(0.2),attack(0.2),attack(0.2),attack(0.2),attack(0.2)
         荒泷一斗 attack(2.0)
         迪希雅 attack(2.0)
         玛薇卡 attack(2.0)
@@ -70,21 +73,29 @@ public class MiningHandler : IActionHandler
     {
         try
         {
-            // 通用化战斗策略
             foreach (var command in _miningCombatScript.CombatCommands)
             {
                 var avatar = combatScenes.SelectAvatar(command.Name);
                 if (avatar != null)
                 {
-                    command.Execute(combatScenes);
-                    break;
+                    // 执行该角色的所有命令
+                    var commandsForAvatar = _miningCombatScript.CombatCommands
+                        .Where(c => c.Name == command.Name);
+
+                    foreach (var cmd in commandsForAvatar)
+                    {
+                        cmd.Execute(combatScenes);
+                    }
+
+                    break; // 执行完一个角色后退出
                 }
             }
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e.Message);
-            Debug.WriteLine(e.StackTrace);
+            Logger.LogError("0x00101 挖矿失败，请提 issue！");
         }
     }
+    
+
 }
