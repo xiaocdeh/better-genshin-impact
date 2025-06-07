@@ -69,6 +69,7 @@ public class MiningHandler : IActionHandler
         }
     }
 
+    //axc 支持多命令挖矿，比如 卡齐娜
     private void Mining(CombatScenes combatScenes)
     {
         try
