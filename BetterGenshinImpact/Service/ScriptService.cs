@@ -2,7 +2,6 @@
 using BetterGenshinImpact.Core.Script.Group;
 using BetterGenshinImpact.Core.Script.Project;
 using BetterGenshinImpact.GameTask;
-
 using BetterGenshinImpact.Service.Interface;
 using BetterGenshinImpact.ViewModel.Pages;
 using Microsoft.Extensions.Logging;
@@ -25,6 +24,7 @@ public partial class ScriptService : IScriptService
 {
     private readonly ILogger<ScriptService> _logger = App.GetLogger<ScriptService>();
     private readonly BlessingOfTheWelkinMoonTask _blessingOfTheWelkinMoonTask = new();
+
     private static bool IsCurrentHourEqual(string input)
     {
         // 尝试将输入字符串转换为整数
@@ -43,9 +43,10 @@ public partial class ScriptService : IScriptService
         // 如果输入非数字或不合法，返回 false
         return false;
     }
+
     public bool ShouldSkipTask(ScriptGroupProject project)
     {
-        if (project.GroupInfo is { Config.PathingConfig.Enabled: true } )
+        if (project.GroupInfo is { Config.PathingConfig.Enabled: true })
         {
             if (IsCurrentHourEqual(project.GroupInfo.Config.PathingConfig.SkipDuring))
             {
@@ -66,12 +67,12 @@ public partial class ScriptService : IScriptService
                     _logger.LogInformation($"{project.Name}任务已经不在执行周期（当前值${index}!=配置值${tcc.Index}），将跳过此任务！");
                     return true;
                 }
-               
             }
-            
         }
+
         return false; // 不跳过
     }
+
     public async Task RunMulti(IEnumerable<ScriptGroupProject> projectList, string? groupName = null)
     {
         groupName ??= "默认";
@@ -101,101 +102,123 @@ public partial class ScriptService : IScriptService
 
         // var timerOperation = hasTimer ? DispatcherTimerOperationEnum.UseCacheImageWithTriggerEmpty : DispatcherTimerOperationEnum.UseSelfCaptureImage;
 
-        
-        bool fisrt = true;
-        await new TaskRunner()
-            .RunThreadAsync(async () =>
+
+        bool first = true;
+        //axc 跳过指定任务组中指定项目名之前的所有任务
+        // 定义每个组中需要跳过到哪个项目名
+        Dictionary<string, string> skipUntilNameMap = new Dictionary<string, string>
+        {
+            { "怪料362", "璃月-骗骗花-珉林奥藏山南方-1个.json" },
+            { "需要跳过的组名称", "项目B" }
+        };
+        bool enableSkipByName = true; // 是否启用按名称跳过
+
+        await new TaskRunner().RunThreadAsync(async () =>
+        {
+            var stopwatch = new Stopwatch();
+            bool skipping = true;
+
+            foreach (var project in list)
             {
-                var stopwatch = new Stopwatch();
-
-                foreach (var project in list)
+                // 判断是否需要跳过
+                if (enableSkipByName &&
+                    skipUntilNameMap.TryGetValue(groupName, out string targetName) &&
+                    skipping)
                 {
-                    if (ShouldSkipTask(project))
+                    if (project.Name != targetName)
                     {
+                        _logger.LogInformation("跳过任务: {Name}", project.Name);
                         continue;
                     }
-                    //月卡检测
-                    await _blessingOfTheWelkinMoonTask.Start(CancellationContext.Instance.Cts.Token);
-                    if (project.Status != "Enabled")
+                    else
                     {
-                        _logger.LogInformation("脚本 {Name} 状态为禁用，跳过执行", project.Name);
-                        continue;
-                    }
-
-                    if (CancellationContext.Instance.Cts.IsCancellationRequested)
-                    {
-                        _logger.LogInformation("执行被取消");
-                        break;
-                    }
-
-                    
-                    if (fisrt)
-                    {
-                        fisrt = false;
-                        Notify.Event(NotificationEvent.GroupStart).Success($"配置组{groupName}启动");
-                    }
-                    for (var i = 0; i < project.RunNum; i++)
-                    {
-                        try
-                        {
-                            TaskTriggerDispatcher.Instance().ClearTriggers();
-
-
-                            _logger.LogInformation("------------------------------");
-
-                            stopwatch.Reset();
-                            stopwatch.Start();
-                            await ExecuteProject(project);
-
-                            //多次执行时及时中断
-                            if (ShouldSkipTask(project))
-                            {
-                                continue;
-                            }
-                        }
-                        catch (NormalEndException e)
-                        {
-                            throw;
-                        }
-                        catch (TaskCanceledException e)
-                        {
-                            _logger.LogInformation("取消执行配置组: {Msg}", e.Message);
-                            throw;
-                        }
-                        catch (Exception e)
-                        {
-                            _logger.LogDebug(e, "执行脚本时发生异常");
-                            _logger.LogError("执行脚本时发生异常: {Msg}", e.Message);
-                        }
-                        finally
-                        {
-                            stopwatch.Stop();
-                            var elapsedTime = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
-                            // _logger.LogDebug("→ 脚本执行结束: {Name}, 耗时: {ElapsedMilliseconds} 毫秒", project.Name, stopwatch.ElapsedMilliseconds);
-                            _logger.LogInformation("→ 脚本执行结束: {Name}, 耗时: {Minutes}分{Seconds:0.000}秒", project.Name,
-                                elapsedTime.Hours * 60 + elapsedTime.Minutes, elapsedTime.TotalSeconds % 60);
-                            _logger.LogInformation("------------------------------");
-                        }
-
-                        await Task.Delay(2000);
+                        skipping = false;
                     }
                 }
-            });
+
+                if (ShouldSkipTask(project))
+                {
+                    continue;
+                }
+
+                await _blessingOfTheWelkinMoonTask.Start(CancellationContext.Instance.Cts.Token);
+
+                if (project.Status != "Enabled")
+                {
+                    _logger.LogInformation("脚本 {Name} 状态为禁用，跳过执行", project.Name);
+                    continue;
+                }
+
+                if (CancellationContext.Instance.Cts.IsCancellationRequested)
+                {
+                    _logger.LogInformation("执行被取消");
+                    break;
+                }
+
+                if (first)
+                {
+                    first = false;
+                    Notify.Event(NotificationEvent.GroupStart).Success($"配置组{groupName}启动");
+                }
+
+                for (var i = 0; i < project.RunNum; i++)
+                {
+                    try
+                    {
+                        TaskTriggerDispatcher.Instance().ClearTriggers();
+
+                        _logger.LogInformation("------------------------------");
+
+                        stopwatch.Reset();
+                        stopwatch.Start();
+                        await ExecuteProject(project);
+
+                        if (ShouldSkipTask(project))
+                        {
+                            continue;
+                        }
+                    }
+                    catch (NormalEndException)
+                    {
+                        throw;
+                    }
+                    catch (TaskCanceledException e)
+                    {
+                        _logger.LogInformation("取消执行配置组: {Msg}", e.Message);
+                        throw;
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogDebug(e, "执行脚本时发生异常");
+                        _logger.LogError("执行脚本时发生异常: {Msg}", e.Message);
+                    }
+                    finally
+                    {
+                        stopwatch.Stop();
+                        var elapsedTime = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
+                        _logger.LogInformation("→ 脚本执行结束: {Name}, 耗时: {Minutes}分{Seconds:0.000}秒", project.Name,
+                            elapsedTime.Hours * 60 + elapsedTime.Minutes, elapsedTime.TotalSeconds % 60);
+                        _logger.LogInformation("------------------------------");
+                    }
+
+                    await Task.Delay(2000);
+                }
+            }
+        });
+
 
         // 还原定时器
         TaskTriggerDispatcher.Instance().SetTriggers(GameTaskManager.LoadInitialTriggers());
-        
+
         if (!string.IsNullOrEmpty(groupName))
         {
             _logger.LogInformation("配置组 {Name} 执行结束", groupName);
         }
 
-        if (!fisrt)
+        if (!first)
         {
             Notify.Event(NotificationEvent.GroupEnd).Success($"配置组{groupName}结束");
         }
-
-       
     }
 
     private List<ScriptGroupProject> ReloadScriptProjects(IEnumerable<ScriptGroupProject> projectList)
