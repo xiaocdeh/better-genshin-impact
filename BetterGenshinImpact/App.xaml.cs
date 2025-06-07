@@ -49,7 +49,9 @@ public partial class App : Application
                 services.AddSingleton<IConfigService>(sp => configService);
                 var all = configService.Get();
 
-                var logFolder = Path.Combine(AppContext.BaseDirectory, "log");
+                //axc 自定义log位置
+                var logFolder = @"D:\Program Files\BetterGI\log"; // 指定的日志文件夹路径
+                // var logFolder = Path.Combine(AppContext.BaseDirectory, "log");
                 Directory.CreateDirectory(logFolder);
                 var logFile = Path.Combine(logFolder, "better-genshin-impact.log");
 
