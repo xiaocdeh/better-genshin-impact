@@ -108,8 +108,8 @@ public partial class ScriptService : IScriptService
         // 定义每个组中需要跳过到哪个项目名
         Dictionary<string, string> skipUntilNameMap = new Dictionary<string, string>
         {
-            { "怪料362", "璃月-骗骗花-珉林奥藏山南方-1个.json" },
-            { "需要跳过的组名称", "项目B" }
+            // { "怪料362", "璃月-骗骗花-珉林奥藏山南方-1个.json" },
+            { "需要跳过的组名称", "需要跳过的项目名称" }
         };
         bool enableSkipByName = true; // 是否启用按名称跳过
 
