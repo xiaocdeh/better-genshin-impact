@@ -141,16 +141,17 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                 .OrderByDescending(g => g.Count()).First().Key; // 选择最多鱼吃的饵料
             logger.LogInformation("选择鱼饵 {Text}", BaitType.FromName(blackboard.selectedBaitName).ChineseName);
             
-            //axc
+            //axc 指定钓鱼使用的鱼饵
             // blackboard.selectedBaitName = "fruit paste bait"; // 果酿饵
             
-            blackboard.selectedBaitName = "fake fly bait"; // 飞蝇假饵
+            // blackboard.selectedBaitName = "fake fly bait"; // 飞蝇假饵
             
             // blackboard.selectedBaitName = "flashing maintenance mek bait"; // 维护机关频闪诱饵
-            // blackboard.selectedBaitName = "sour bait"; // 酸桔饵
+            
+            blackboard.selectedBaitName = "sour bait"; // 酸桔饵 (BaitType.cs)
+            
             logger.LogInformation("axc选择鱼饵 {Text}", BaitType.FromName(blackboard.selectedBaitName).ChineseName);
-            //axc
-
+            
             // 寻找鱼饵
             var ro = new RecognitionObject
             {
@@ -397,6 +398,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                 Debug.WriteLine("无鱼饵适用鱼");
                 noTargetFishTimes++;
 
+                //axc 两次抛竿无鱼退出，因识别率有偏差，建议重复2次任务组
                 if (noTargetFishTimes >= 3)
                 {
                     // 没有找到鱼饵适用鱼，重新选择鱼饵
