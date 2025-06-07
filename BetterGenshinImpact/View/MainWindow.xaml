@@ -11,7 +11,8 @@
                  xmlns:viewModel="clr-namespace:BetterGenshinImpact.ViewModel"
                  Title="更好的原神"
                  Width="900"
-                 Height="600"
+                 
+                 Height="900"
                  d:Background="#D2D2D2"
                  d:DataContext="{d:DesignInstance Type=viewModel:MainWindowViewModel}"
                  ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
