@@ -1,3 +1,24 @@
+//axc 跳过指定任务组中指定项目名之前的所有任务
+<p/>
+
+//axc 支持多命令挖矿，比如 卡齐娜
+<p/>
+
+//axc 指定启动窗口大小为900*900
+<p/>
+
+//axc 版本1.0.1-axc
+<p/>
+
+//axc 指定钓鱼使用的鱼饵
+<p/>
+
+//axc 自定义banner
+<p/>
+
+//axc 自定义log位置
+
+
 <div align="center">
   <h1 align="center">
     <a href="https://bettergi.com/"><img src="https://img.alicdn.com/imgextra/i2/2042484851/O1CN014wn1rf1lhoFYjL0gA_!!2042484851.png" width="200"></a>
